@@ -30,6 +30,7 @@ import uz.shokirov.englishquotes.databinding.SheetItemBinding
 import uz.shokirov.model.Quote
 import uz.shokirov.utils.MyViewModel
 import uz.shokirov.utils.NetworkHelper
+import uz.shokirov.utils.QuotesObject
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -63,8 +64,8 @@ class AllQuotesFragment : Fragment() {
 
     @SuppressLint("UseRequireInsteadOfGet")
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+            inflater: LayoutInflater, container: ViewGroup?,
+            savedInstanceState: Bundle?,
     ): View? {
         binding = FragmentAllQuotesBinding.inflate(layoutInflater)
 
@@ -98,79 +99,85 @@ class AllQuotesFragment : Fragment() {
         requestQueue = Volley.newRequestQueue(context)
         VolleyLog.DEBUG = true //qanday ma'lumot kela
         val jsonArrayRequest = JsonArrayRequest(
-            Request.Method.GET, url, null,
-            object : Response.Listener<JSONArray> {
-                override fun onResponse(response: JSONArray?) {
+                Request.Method.GET, url, null,
+                object : Response.Listener<JSONArray> {
+                    override fun onResponse(response: JSONArray?) {
 
-                    val type = object : TypeToken<List<Quote>>() {}.type
-                    val list = Gson().fromJson<List<Quote>>(response.toString(), type)
+                        val type = object : TypeToken<List<Quote>>() {}.type
+                        val list = Gson().fromJson<List<Quote>>(response.toString(), type)
 
-                    var listSofted = ArrayList<Quote>()
-                    for (i in list.indices) {
-                        if (list[i].author != null) {
-                            listSofted.add(list[i])
-                        }
-                    }
-
-                    (activity as MainActivity).binding.loadingAnim.visibility = View.INVISIBLE
-                    binding.rv.adapter = RvAdaptetr(listSofted, object : OnClick {
-                        override fun click(quote: Quote, position: Int) {
-                            var bottomSheetDialog =
-                                BottomSheetDialog(context!!, R.style.SheetDialog)
-                            var item = SheetItemBinding.inflate(layoutInflater)
-                            bottomSheetDialog.setContentView(item.root)
-                            bottomSheetDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-                            item.itemAuthor.text = quote.author
-                            item.itemText.text = quote.text
-                            MySharedPreferences.init(context!!)
-                            var list = MySharedPreferences.obektString
-                            var isHave = false
-                            for (i in 0 until list.size) {
-                                if (quote != list[i]) {
-                                    isHave = false
-                                } else {
-                                    isHave = true
-                                }
+                        var listSofted = ArrayList<Quote>()
+                        for (i in list.indices) {
+                            if (list[i].author != null) {
+                                listSofted.add(list[i])
                             }
-                            item.cardLike.setOnClickListener {
-                                if (!isHave) {
+                        }
+                        listSofted.sortBy {
+                            it.author
+                        }
+
+                        (activity as MainActivity).binding.loadingAnim.visibility = View.INVISIBLE
+                        QuotesObject.quoteList  = listSofted
+                        binding.rv.adapter = RvAdaptetr(listSofted, object : OnClick {
+                            override fun click(quote: Quote, position: Int) {
+                                var bottomSheetDialog =
+                                        BottomSheetDialog(context!!, R.style.SheetDialog)
+                                var item = SheetItemBinding.inflate(layoutInflater)
+                                bottomSheetDialog.setContentView(item.root)
+                                bottomSheetDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+                                item.itemAuthor.text = quote.author
+                                item.itemText.text = quote.text
+                                MySharedPreferences.init(context!!)
+                                var list = MySharedPreferences.obektString
+                                var isHave = false
+                                item.cardLike.setOnClickListener {
+                                    for (i in list.indices) {
+                                        var exam = list[i]
+                                        if (exam == quote) {
+                                            isHave = true
+                                            break
+                                        }
+                                    }
+                                    if (!isHave) {
+                                        list.add(quote)
+                                        bottomSheetDialog.cancel()
+                                        Toast.makeText(context, "Added", Toast.LENGTH_SHORT).show()
+                                    } else {
+                                        Toast.makeText(
+                                                context,
+                                                "This has already been added",
+                                                Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                    MySharedPreferences.obektString = list
+
+                                }
+                                item.cardShare.setOnClickListener {
+                                    val sendIntent = Intent()
+                                    sendIntent.action = Intent.ACTION_SEND
+                                    sendIntent.putExtra(Intent.EXTRA_TEXT, "This is my text to send.")
+                                    sendIntent.type = "text/plain"
+
+                                    val shareIntent = Intent.createChooser(sendIntent, null)
+                                    startActivity(shareIntent)
                                     bottomSheetDialog.cancel()
-                                    list.add(quote)
-                                    Toast.makeText(context, "Added", Toast.LENGTH_SHORT).show()
-                                } else if (isHave) {
-                                    Toast.makeText(
-                                        context,
-                                        "This has already been added",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
                                 }
-                                MySharedPreferences.obektString = list
+                                item.cardCopy.setOnClickListener {
+                                    copyText(quote.text, quote.author)
+                                    bottomSheetDialog.cancel()
+                                }
 
+                                bottomSheetDialog.show()
                             }
-                            item.cardShare.setOnClickListener {
-                                val sendIntent = Intent()
-                                sendIntent.action = Intent.ACTION_SEND
-                                sendIntent.putExtra(Intent.EXTRA_TEXT, "This is my text to send.")
-                                sendIntent.type = "text/plain"
+                        })
 
-                                val shareIntent = Intent.createChooser(sendIntent, null)
-                                startActivity(shareIntent)
-                            }
-                            item.cardCopy.setOnClickListener {
-                                copyText(quote.text, quote.author)
-                            }
+                        Log.d(TAG, "onResponse : ${response.toString()}")
+                    }
+                }, object : Response.ErrorListener {
+            override fun onErrorResponse(error: VolleyError?) {
 
-                            bottomSheetDialog.show()
-                        }
-                    })
-
-                    Log.d(TAG, "onResponse : ${response.toString()}")
-                }
-            }, object : Response.ErrorListener {
-                override fun onErrorResponse(error: VolleyError?) {
-
-                }
-            })
+            }
+        })
 
         jsonArrayRequest.tag = "tag1" //tag berilyapti
         requestQueue.add(jsonArrayRequest)
@@ -181,13 +188,15 @@ class AllQuotesFragment : Fragment() {
     private fun copyText(text: String, author: String) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
             val clipboard =
-                context!!.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    context!!.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             clipboard.text = text + " ($author)"
+            Toast.makeText(context, "Copied", Toast.LENGTH_SHORT).show()
         } else {
             val clipboard =
-                context!!.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                    context!!.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
             val clip = ClipData.newPlainText("Copied Text", text + " ($author)")
             clipboard.setPrimaryClip(clip)
+            Toast.makeText(context, "Copied", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -204,11 +213,11 @@ class AllQuotesFragment : Fragment() {
         // TODO: Rename and change types and number of parameters
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
-            AllQuotesFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+                AllQuotesFragment().apply {
+                    arguments = Bundle().apply {
+                        putString(ARG_PARAM1, param1)
+                        putString(ARG_PARAM2, param2)
+                    }
                 }
-            }
     }
 }

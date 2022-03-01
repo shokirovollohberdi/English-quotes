@@ -22,4 +22,8 @@
         <item name="android:windowFrame">@null</item>
         <item name="android:windowIsFloating">true</item>
     </style>
+    <style name="TextMenu" parent="Widget.AppCompat.TextView">
+        <item name="textColor">@color/black</item>
+    </style>
+
 </resources>

@@ -5,7 +5,7 @@
     android:id="@+id/drawable"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="#FFFFFF"
     tools:context=".MainActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -113,6 +113,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             app:cornerRadius="2dp"
+            app:duration="10"
             app:corners="top_left|top_right"
             app:iconTint="@android:color/darker_gray"
             app:indicatorColor="@color/blue"
@@ -137,6 +138,7 @@
         app:drawerLayoutCornerSize="12dp"
         app:headerLayout="@layout/header_layout"
         app:itemIconTint="@color/black"
+        app:itemTextColor="@color/black"
         app:menu="@menu/nav_menu" />
 
 

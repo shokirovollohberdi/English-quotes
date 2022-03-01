@@ -9,6 +9,11 @@
         android:icon="@drawable/ic_contact24"
         android:title="Contact me" />
     <item
+        android:id="@+id/menu_author"
+        android:icon="@drawable/ic_author"
+        android:title="Author" />
+
+    <item
         android:id="@+id/menu_share"
         android:icon="@drawable/ic_share"
         android:title="Share" />

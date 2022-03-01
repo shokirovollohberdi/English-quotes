@@ -10,6 +10,7 @@ import android.text.ClipboardManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import uz.shokirov.adaoter.OnClick
@@ -68,7 +69,7 @@ class SavedFragment : Fragment() {
             @SuppressLint("ResourceType")
             override fun click(quote: Quote, position: Int) {
                 var bottomSheetDialog =
-                    BottomSheetDialog(context!!, R.style.SheetDialog)
+                        BottomSheetDialog(context!!, R.style.SheetDialog)
                 var item = SheetItemBinding.inflate(layoutInflater)
                 bottomSheetDialog.setContentView(item.root)
                 item.likeImage.setImageResource(R.drawable.ic_delete)
@@ -86,6 +87,8 @@ class SavedFragment : Fragment() {
                 }
                 item.cardCopy.setOnClickListener {
                     copyText(quote.text, quote.author)
+                    bottomSheetDialog.cancel()
+                    Toast.makeText(context, "Copied", Toast.LENGTH_SHORT).show()
                 }
                 item.cardShare.setOnClickListener {
                     val sendIntent: Intent = Intent().apply {
@@ -95,6 +98,7 @@ class SavedFragment : Fragment() {
                     }
                     val shareIntent = Intent.createChooser(sendIntent, null)
                     startActivity(shareIntent)
+                    bottomSheetDialog.cancel()
                 }
 
 

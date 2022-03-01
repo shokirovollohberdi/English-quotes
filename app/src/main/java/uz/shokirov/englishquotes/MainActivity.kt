@@ -5,9 +5,11 @@ import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.MenuItem
 import android.widget.Toast
+import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.navigation.NavigationView
 import me.ibrahimsn.lib.OnItemSelectedListener
 import uz.shokirov.adaoter.PagerAdapter
@@ -46,15 +48,38 @@ class MainActivity : AppCompatActivity() {
                     R.id.menu_share -> {
 
                     }
+                    R.id.menu_author->{
+                        startActivity(Intent(this@MainActivity,AuthorActivity::class.java))
+                    }
 
                 }
                 return true
             }
         })
-        binding.viewpager.isUserInputEnabled = false
+
         binding.tabLayout.setOnItemSelectedListener {
             binding.viewpager.currentItem = it
         }
+
+
+
+        binding.viewpager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
+                super.onPageScrolled(position, positionOffset, positionOffsetPixels)
+                Log.d("TAG", "onPageScrolled: $position")
+                binding.tabLayout.itemActiveIndex = position
+
+            }
+
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+
+            }
+
+            override fun onPageScrollStateChanged(state: Int) {
+                super.onPageScrollStateChanged(state)
+            }
+        })
 
 
     }
